@@ -9,6 +9,7 @@ Requirements:
 
 '''
 from sqlalchemy import create_engine
+import pandas as pd
 import os
 
 class DBconnector():
@@ -18,16 +19,16 @@ class DBconnector():
         self.password = password
         self.host = host
         self.port = port
-        self.con_url = "postgres://username:password@host:port/database"
+        self.con_url = f"postgres://{username}:{password}@{host}:{port}/database"
         self.engine = create_engine(self.con_url)
 
-    def execute_sql_query(self, sql) -> None:
-        # input: SQL command as a string
+    def execute_sql_query(self, sql_query) -> None:
+        """ Executes a sql query"""
         with self.engine.connect() as con:
-            con.execute(sql)
+            con.execute(sql_query)
 
     def execute_sql_from_file(self, sql_file) -> None:
-        # read SQL script
+        """ Executes a sql query from a sql script/file """
         script_name = sql_file
         dirname = os.path.dirname(__file__)
         sql_file = os.path.join(dirname, script_name)
@@ -35,7 +36,7 @@ class DBconnector():
         sql = open(sql_file, 'r').read()
 
         try:
-            # Executing SQL commands
+            # execute SQL commands
             with self.engine.connect() as con:
                 con.execute(sql)
             print(f'Successfully executed {script_name}')
@@ -44,53 +45,21 @@ class DBconnector():
             print(f'Failed to execute {script_name}')
             print(f'Error:\n{err}')
 
+    def insert_dataframe(self, dataframe, table_name) -> None:
+        """ Inserts pandas dataframe into a postgreSQL database table"""
+        dataframe.to_sql(
+            name = table_name, 
+            con = self.engine, 
+            if_exists = 'append', # 'fail' raises exception, 'replace' drops and recreates
+            index = True) # dataframe index as column
 
-# Load DataFrame into database: SQLAlchemy X Pandas
-df.to_sql(
-    name='table_name',
-    con=engine,
-    if_exists='append', # 'fail' raises exception if exists, 'replace' drops and recreates
-    index=False)
+    def fetch_dataframe_from_query(self, dataframe, sql_query) -> pd.DataFrame:
+        """ Reads a select SQL query into a pandas dataframe"""
+        dataframe = pd.read_sql(sql_query, self.engine)
+        return dataframe
 
-
-from sqlalchemy import create_engine
-
-# Connecting to Postgres
-connection_uri = 'postgresql://postgres:test@localhost:5432/covid-19'
-engine = create_engine(connection_uri)
-
-with engine.connect() as con:
-    result = con.execute(
-                """
-                SELECT
-                    countries_and_territories,
-                    SUM(cases) AS cases,
-                    SUM(deaths) AS deaths
-                FROM worldwide_cases
-                GROUP BY countries_and_territories
-                ORDER BY cases DESC
-                """
-                )
-
-# returns a list of tuples 
-for row in result.fetchall():
-    print(row)
-
-
-from sqlalchemy import create_engine
-import pandas as pd
-import os
-
-# Connecting to Postgres
-connection_uri = 'postgresql://postgres:test@localhost:5432/covid-19'
-engine = create_engine(connection_uri)
-
-# Reading our SQL script
-script_name = 'query.sql'
-dirname = os.path.dirname(__file__)
-sql_file = os.path.join(dirname, script_name)
-sql = open(sql_file, 'r').read()
-
-# Reading query result into DataFrame
-df = pd.read_sql(sql, engine)
-print(df.head())
+    def fetch_rows_from_query(self, sql_query) -> list:
+        """ Reads a select SQL query and returns a list of tuples """
+        with self.engine.connect() as con:
+            result = con.execute(sql_query)
+        return result.fetchall()
