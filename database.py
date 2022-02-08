@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 import pandas as pd
 import os
 
-class DBconnector():
+class DBConnector():
 
     def __init__(self, username="postgres", password="youtubenlp", host="localhost", port="5432") -> None:
         self.username = username
