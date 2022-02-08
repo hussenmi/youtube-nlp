@@ -121,7 +121,7 @@ class ApiCrawler():
 crawler = ApiCrawler()
 # comments = crawler.get_comments("RcYjXbSJBN8") # Joe Rofan podcase with 89,925 comments + replies
 # comments = crawler.get_comments("___NoMi5pp0") # randome Korean video with 141 comments + replies
-print(comments)
+# print(comments)
 
 
 '''
