@@ -4,22 +4,20 @@ https://towardsdatascience.com/a-practical-guide-to-getting-set-up-with-postgres
 
 Requirements:
 - download postgreSQL and pgAdmin 4 https://www.postgresql.org/download/ 
-- pip install SQLAlchemy
+- pip install SQLAlchemy (ORM, or object-relational mapping - generates SQL statements)
+- pip install psycopg2 (database driver - sends SQL statements to the database)
 - pip install pandas
 
 '''
 from sqlalchemy import create_engine
+import psycopg2
 import pandas as pd
 import os
 
 class DBConnector():
 
-    def __init__(self, username="postgres", password="youtubenlp", host="localhost", port="5432") -> None:
-        self.username = username
-        self.password = password
-        self.host = host
-        self.port = port
-        self.con_url = f"postgres://{username}:{password}@{host}:{port}/database"
+    def __init__(self, username="postgres", password="youtubenlp", host="localhost", port="5432", database="postgres") -> None:
+        self.con_url = f"postgresql://{username}:{password}@{host}:{port}/{database}"
         self.engine = create_engine(self.con_url)
 
     def execute_sql_query(self, sql_query) -> None:
@@ -53,7 +51,7 @@ class DBConnector():
             if_exists = 'append', # 'fail' raises exception, 'replace' drops and recreates
             index = True) # dataframe index as column
 
-    def fetch_dataframe_from_query(self, dataframe, sql_query) -> pd.DataFrame:
+    def fetch_dataframe_from_query(self, sql_query) -> pd.DataFrame:
         """ Reads a select SQL query into a pandas dataframe"""
         dataframe = pd.read_sql(sql_query, self.engine)
         return dataframe
@@ -63,3 +61,7 @@ class DBConnector():
         with self.engine.connect() as con:
             result = con.execute(sql_query)
         return result.fetchall()
+
+database = DBConnector()
+df = database.fetch_dataframe_from_query("select * from d_chris order by id")
+print(df.head())
