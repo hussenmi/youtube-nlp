@@ -2,6 +2,7 @@
 # pip install --upgradpe google-auth-oauthlib google-auth-httplib2
 
 from googleapiclient.discovery import build
+from functools import lru_cache
 
 class ApiCrawler():
 
@@ -13,6 +14,7 @@ class ApiCrawler():
         """
         self.api_key = 'AIzaSyDsD5jELu-4jyFRYpeUfOiueSuuBMXz7aA' # Chris' API key
 
+    @lru_cache # retrieves cached output if arguments the same the second time
     def get_comments(self, video_id):
         """ Gets the top-level comments of a single video and returns an 
         array of strings
@@ -56,6 +58,7 @@ class ApiCrawler():
 
         return comments
     
+    @lru_cache
     def get_comments_and_replies(self, video_id):
         """
         Gets the top-level comments and replies of a single video and returns a 
@@ -118,11 +121,38 @@ class ApiCrawler():
 
         return comments_replies
 
-crawler = ApiCrawler()
+# crawler = ApiCrawler()
 # comments = crawler.get_comments("RcYjXbSJBN8") # Joe Rofan podcase with 89,925 comments + replies
 # comments = crawler.get_comments("___NoMi5pp0") # randome Korean video with 141 comments + replies
 # print(comments)
 
+import time
+  
+# Function that computes Fibonacci numbers without lru_cache
+def fib_without_cache(n):
+    if n < 2:
+        return n
+    return fib_without_cache(n-1) + fib_without_cache(n-2)
+      
+begin = time.time()
+fib_without_cache(50)
+end = time.time()
+
+print("Time taken to execute the function without lru_cache is", end-begin)
+  
+# Function that computes Fibonacci
+# numbers with lru_cache
+@lru_cache
+def fib_with_cache(n):
+    if n < 2:
+        return n
+    return fib_with_cache(n-1) + fib_with_cache(n-2)
+      
+begin = time.time()
+fib_with_cache(50)
+end = time.time()
+  
+print("Time taken to execute the \function with lru_cache is", end-begin)
 
 '''
 Sample commentThreads.list() JSON response
