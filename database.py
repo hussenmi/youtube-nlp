@@ -13,11 +13,17 @@ from sqlalchemy import create_engine
 import psycopg2
 import pandas as pd
 import os
+import MySQLdb
 
 class DBConnector():
+    
+    # 89.27.154.69 closed port 5432 cannot establish TCP/IP connections
+    # def __init__(self, username="postgres", password="youtubenlp", host="localhost", port="5432", database="postgres") -> None:
+    #     self.con_url = f"postgresql://{username}:{password}@{host}:{port}/{database}"
+    #     self.engine = create_engine(self.con_url)
 
-    def __init__(self, username="postgres", password="youtubenlp", host="localhost", port="5432", database="postgres") -> None:
-        self.con_url = f"postgresql://{username}:{password}@{host}:{port}/{database}"
+    def __init__(self, username="sql11471621", password="x6XZZvP7dX", host="sql11.freesqldatabase.com", port="3306", database="sql11471621") -> None:
+        self.con_url = f"mysql://{username}:{password}@{host}:{port}/{database}"
         self.engine = create_engine(self.con_url)
 
     def execute_sql_query(self, sql_query) -> None:
@@ -65,3 +71,4 @@ class DBConnector():
 database = DBConnector()
 df = database.fetch_dataframe_from_query("select * from d_chris order by id")
 print(df.head())
+
