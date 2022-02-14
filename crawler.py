@@ -87,10 +87,10 @@ class ApiCrawler():
   
         # retrieve youtube video results
         video_response = youtube.commentThreads().list(
-        maxResults = 100,
-        part = 'snippet, replies',
-        videoId = video_id
-        ).execute()
+          maxResults = 100,
+          part = 'snippet, replies',
+          videoId = video_id
+          ).execute()
 
         # iterate video responses
         while video_response:
@@ -138,7 +138,7 @@ class ApiCrawler():
 crawler = ApiCrawler()
 # comments = crawler.get_comments("RcYjXbSJBN8") # Joe Rofan podcase with 89,925 comments + replies
 comments = crawler.get_comments_and_replies("___NoMi5pp0", 100) # random Korean video with 118 comments + replies
-# print(comments)
+print(comments)
 
 '''
 Sample commentThreads.list() JSON response
