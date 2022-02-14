@@ -18,52 +18,62 @@ class ApiCrawler():
         self.api_key = api_key
 
     @lru_cache # retrieves cached output if arguments the same the second time
-    def get_comments(self, video_id, n_results):
-        """ Gets the top-level comments of a single video and returns an 
-        array of strings
-        e.g. [ "first comment", "second comment", ...]
-        """
+    def get_comments(self, video_id, n_requested):
+      """ Gets the top-level comments of a single video and returns an 
+      array of strings
+      e.g. [ "first comment", "second comment", ...]
+      """
 
-        # intialize empty array to return comments
-        comments = []
-  
-        # create youtube resource object
-        youtube = build('youtube', 'v3', developerKey = self.api_key)
-  
-        # retrieve youtube video results
-        video_response = youtube.commentThreads().list(
-            maxResults = 100,
-            part = 'snippet',
-            videoId = video_id
-            ).execute()
-        print(video_response)
-        
-        # iterate video responses
-        while video_response and len(comments) < n_results:
+      # intialize empty array to return comments
+      comments = []
 
-            # extract required info from each result object 
-            for item in video_response['items']:
+      # create youtube resource object
+      youtube = build('youtube', 'v3', developerKey = self.api_key)
 
-                # extract comment resources from comment threat resource
-                comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
-  
-                # append a single comment
-                comments.append(comment)
-  
-                # repeat if next page of comments exist
-                if 'nextPageToken' in video_response:
-                    video_response = youtube.commentThreads().list(
-                            part = 'snippet, replies',
-                            videoId = video_id,
-                            pageToken = video_response['nextPageToken']
-                        ).execute()
-                else:
-                    break
+      # retrieve youtube video results
+      video_response = youtube.commentThreads().list(
+          maxResults = 100,
+          part = 'snippet',
+          videoId = video_id
+          ).execute()
 
-        return comments
+      # iterate video responses
+      while video_response:
+
+          # extract required info from each result object 
+          for item in video_response['items']:
+
+              # extract comment resources from comment threat resource
+              comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
+
+              # append a single comment
+              comments.append(comment)
+
+          # repeat if next page of comments exist
+          if 'nextPageToken' in video_response:
+            
+            # don't repeat larger than number of comments requested
+            if len(comments) >= n_requested:
+              video_response = False
+
+            else:
+              video_response = youtube.commentThreads().list(
+                      part = 'snippet, replies',
+                      videoId = video_id,
+                      pageToken = video_response['nextPageToken']
+                  ).execute()
+
+          else:
+            video_response = False
+
+            
+      print(f"actual number: {len(comments)}")
+      print(f"requested number: {n_requested}")
+
+      return comments
     
     @lru_cache
-    def get_comments_and_replies(self, video_id):
+    def get_comments_and_replies(self, video_id, n_requested):
         """
         Gets the top-level comments and replies of a single video and returns a 
         nested array of strings.
@@ -79,10 +89,10 @@ class ApiCrawler():
   
         # retrieve youtube video results
         video_response = youtube.commentThreads().list(
-        maxResults = 10,
-        part = 'snippet, replies',
-        videoId = video_id
-        ).execute()
+          maxResults = 100,
+          part = 'snippet, replies',
+          videoId = video_id
+          ).execute()
 
         # iterate video responses
         while video_response:
@@ -92,42 +102,44 @@ class ApiCrawler():
             
                 # extract comment resources from comment threat resource
                 comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
-              
                 # count number of replies of comment
                 replycount = item['snippet']['totalReplyCount']
-  
-                replies = []
 
-                # if reply is there
+                replies = []
                 if replycount > 0:
                 
                     # iterate through all reply
                     for reply in item['replies']['comments']:
-                    
-                        # extract reply
                         reply = reply['snippet']['textDisplay']
-                      
-                        # store reply as list
                         replies.append(reply)
   
                 # append a single comment and its replies
                 comments_replies.append([comment, replies])
   
-            # # repeat if next page of comments exist
-            # if 'nextPageToken' in video_response:
-            #     video_response = youtube.commentThreads().list(
-            #             part = 'snippet, replies',
-            #             videoId = video_id,
-            #             pageToken = video_response['nextPageToken']
-            #         ).execute()
-            # else:
-            #     break
+            # repeat if next page of comments exist
+            if 'nextPageToken' in video_response:
+            
+              # don't repeat larger than number of comments requested
+              if len(comments_replies) >= n_requested:
+                video_response = False
+
+              else:
+                video_response = youtube.commentThreads().list(
+                        part = 'snippet, replies',
+                        videoId = video_id,
+                        pageToken = video_response['nextPageToken']
+                    ).execute()
+
+            else:
+              video_response = False
+
+        print(f"comment-reply bundle: {len(comments_replies)}")
 
         return comments_replies
 
 crawler = ApiCrawler()
 # comments = crawler.get_comments("RcYjXbSJBN8") # Joe Rofan podcase with 89,925 comments + replies
-comments = crawler.get_comments("___NoMi5pp0", 100) # random Korean video with 141 comments + replies
+comments = crawler.get_comments_and_replies("___NoMi5pp0", 100) # random Korean video with 118 comments + replies
 print(comments)
 
 '''
