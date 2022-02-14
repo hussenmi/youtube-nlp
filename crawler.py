@@ -3,6 +3,7 @@
 
 from googleapiclient.discovery import build
 from functools import lru_cache
+from secret import *
 
 import os
 
@@ -14,10 +15,10 @@ class ApiCrawler():
         250,000 comments per day. E.g. a Joe Rogan podcast episode with Jordan
         Peterson has 89,925 comments + replies at 25,000,000 views
         """
-        self.api_key = 'AIzaSyDsD5jELu-4jyFRYpeUfOiueSuuBMXz7aA' # Chris' API key
+        self.api_key = api_key
 
     @lru_cache # retrieves cached output if arguments the same the second time
-    def get_comments(self, video_id):
+    def get_comments(self, video_id, n_results):
         """ Gets the top-level comments of a single video and returns an 
         array of strings
         e.g. [ "first comment", "second comment", ...]
@@ -35,28 +36,29 @@ class ApiCrawler():
             part = 'snippet',
             videoId = video_id
             ).execute()
-  
-        # iterate video responses
-        while video_response:
+        print(video_response)
         
+        # iterate video responses
+        while video_response and len(comments) < n_results:
+
             # extract required info from each result object 
             for item in video_response['items']:
-            
+
                 # extract comment resources from comment threat resource
                 comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
   
                 # append a single comment
                 comments.append(comment)
   
-                # # repeat if next page of comments exist
-                # if 'nextPageToken' in video_response:
-                #     video_response = youtube.commentThreads().list(
-                #             part = 'snippet, replies',
-                #             videoId = video_id,
-                #             pageToken = video_response['nextPageToken']
-                #         ).execute()
-                # else:
-                #     break
+                # repeat if next page of comments exist
+                if 'nextPageToken' in video_response:
+                    video_response = youtube.commentThreads().list(
+                            part = 'snippet, replies',
+                            videoId = video_id,
+                            pageToken = video_response['nextPageToken']
+                        ).execute()
+                else:
+                    break
 
         return comments
     
@@ -81,7 +83,7 @@ class ApiCrawler():
         part = 'snippet, replies',
         videoId = video_id
         ).execute()
-  
+
         # iterate video responses
         while video_response:
         
@@ -125,7 +127,7 @@ class ApiCrawler():
 
 crawler = ApiCrawler()
 # comments = crawler.get_comments("RcYjXbSJBN8") # Joe Rofan podcase with 89,925 comments + replies
-comments = crawler.get_comments("___NoMi5pp0") # randome Korean video with 141 comments + replies
+comments = crawler.get_comments("___NoMi5pp0", 100) # random Korean video with 141 comments + replies
 print(comments)
 
 '''
