@@ -3,6 +3,7 @@
 
 from googleapiclient.discovery import build
 from functools import lru_cache
+from secret import *
 
 class ApiCrawler():
 
@@ -12,9 +13,9 @@ class ApiCrawler():
         250,000 comments per day. E.g. a Joe Rogan podcast episode with Jordan
         Peterson has 89,925 comments + replies at 25,000,000 views
         """
-        self.api_key = 'AIzaSyDsD5jELu-4jyFRYpeUfOiueSuuBMXz7aA' # Chris' API key
+        self.api_key = api_key
 
-    # @lru_cache # retrieves cached output if arguments the same the second time
+    @lru_cache # retrieves cached output if arguments the same the second time
     def get_comments(self, video_id, n_results):
         """ Gets the top-level comments of a single video and returns an 
         array of strings
@@ -33,12 +34,11 @@ class ApiCrawler():
             part = 'snippet',
             videoId = video_id
             ).execute()
-
-        count_while = 0
+        print(video_response)
+        
         # iterate video responses
         while video_response and len(comments) < n_results:
 
-            count_for = 0
             # extract required info from each result object 
             for item in video_response['items']:
 
@@ -81,7 +81,7 @@ class ApiCrawler():
         part = 'snippet, replies',
         videoId = video_id
         ).execute()
-  
+
         # iterate video responses
         while video_response:
         
