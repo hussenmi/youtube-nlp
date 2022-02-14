@@ -7,7 +7,7 @@ Requirements:
 - pip install SQLAlchemy (ORM, or object-relational mapping - generates SQL statements)
 - pip install psycopg2 (database driver - sends SQL statements to the database)
 - pip install pandas
-- pip install MySQLdb (supporst mySQLdb dialent and clients)
+- pip install mysqlclient (supporst mySQLdb dialent and clients)
 
 '''
 from sqlalchemy import create_engine
@@ -74,4 +74,3 @@ class DBConnector():
 database = DBConnector()
 df = database.fetch_dataframe_from_query("select * from d_chris order by id")
 print(df.head())
-
