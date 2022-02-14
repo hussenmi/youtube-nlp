@@ -4,6 +4,8 @@
 from googleapiclient.discovery import build
 from functools import lru_cache
 
+import os
+
 class ApiCrawler():
 
     def __init__(self):
@@ -121,10 +123,10 @@ class ApiCrawler():
 
         return comments_replies
 
-# crawler = ApiCrawler()
+crawler = ApiCrawler()
 # comments = crawler.get_comments("RcYjXbSJBN8") # Joe Rofan podcase with 89,925 comments + replies
-# comments = crawler.get_comments("___NoMi5pp0") # randome Korean video with 141 comments + replies
-# print(comments)
+comments = crawler.get_comments("___NoMi5pp0") # randome Korean video with 141 comments + replies
+print(comments)
 
 '''
 Sample commentThreads.list() JSON response

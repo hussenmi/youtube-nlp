@@ -1,0 +1,6 @@
+api_key = "AIzaSyDsD5jELu-4jyFRYpeUfOiueSuuBMXz7aA"
+username = "sql11471621"
+password = "x6XZZvP7dX"
+host = "sql11.freesqldatabase.com"
+database = "sql11471621"
+port = "3306"
